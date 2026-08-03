@@ -20,13 +20,15 @@ from retriever import RAGPipeline
 
 app = FastAPI(title="Wealth AI Assistant API")
 
-# Initialize RAG Pipeline globally
-try:
-    print("Initializing RAG Pipeline...")
-    rag = RAGPipeline()
-except Exception as e:
-    print(f"Error initializing RAG: {e}")
-    rag = None
+# Initialize RAG Pipeline globally (Lazy Loaded)
+rag = None
+
+def get_rag():
+    global rag
+    if rag is None:
+        print("Lazy-loading RAG Pipeline (this downloads the embedding model on first request)...")
+        rag = RAGPipeline()
+    return rag
 
 class ChatRequest(BaseModel):
     query: str
@@ -39,9 +41,6 @@ class ChatResponse(BaseModel):
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat_endpoint(request: ChatRequest):
-    if not rag:
-        raise HTTPException(status_code=500, detail="RAG Pipeline not initialized.")
-        
     query = request.query.strip()
     if not query:
         return ChatResponse(answer="Please enter a valid question.")
@@ -50,13 +49,14 @@ async def chat_endpoint(request: ChatRequest):
     guardrail_result = check_guardrails(query)
     if not guardrail_result["is_safe"]:
         return ChatResponse(
-            answer=guardrail_result["message"],
+            answer=guardrail_result["reason"],
             is_safe=False
         )
         
-    # 2. RAG Pipeline
+    # 2. Retrieve & Generate
     try:
-        rag_result = rag.generate_answer(query)
+        pipeline = get_rag()
+        rag_result = pipeline.generate_answer(query)
         return ChatResponse(
             answer=rag_result["answer"],
             citation=rag_result.get("citation"),
