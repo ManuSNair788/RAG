@@ -4,7 +4,9 @@ requests
 beautifulsoup4
 chromadb
 sentence-transformers
-groq
+langchain
+langchain-core
+langchain-groq
 pydantic
 pydantic-settings
 python-dotenv
