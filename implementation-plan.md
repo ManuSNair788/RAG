@@ -78,10 +78,10 @@ To ensure modularity and maintainability, the ingestion pipeline will be divided
 ### Phase 6: Scheduling Component (Daily Data Ingestion)
 - **Objective:** Ensure the RAG assistant always has the latest mutual fund data (NAVs, Expense Ratios) by automatically triggering the ingestion pipeline daily.
 - **Workflow:** 
-  - Create an orchestration script (`scheduler.py`) that runs the ingestion components in sequence: `scraper.py` -> `chunker.py` -> `embedder.py`.
+  - Create an orchestration script (`ingest.py` or similar) that runs the ingestion components in sequence: `scraper.py` -> `chunker.py` -> `embedder.py`.
 - **Implementation Mechanism:** 
-  - Use `APScheduler` (Advanced Python Scheduler) or a simple `schedule` library loop running in a background thread to execute the workflow every 24 hours (e.g., at midnight).
-  - Ensure the script logs successes/failures so we can monitor the daily updates without manual intervention.
+  - Use **GitHub Actions**. We will create a `.github/workflows/schedule.yml` file that defines a cron job.
+  - Every 24 hours (e.g., at midnight UTC), the GitHub Action will spin up a runner, install the dependencies, execute the ingestion script to update the ChromaDB vector files, and automatically commit the fresh database back to the `main` branch.
 
 ## Verification Plan
 
