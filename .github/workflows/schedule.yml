@@ -2,8 +2,8 @@ name: Daily RAG Data Ingestion
 
 on:
   schedule:
-    # Run everyday at midnight UTC
-    - cron: '0 0 * * *'
+    # Run everyday at 05:00 UTC (10:30 AM IST)
+    - cron: '0 5 * * *'
   workflow_dispatch:
     # Allow manual triggers from the GitHub UI
 
